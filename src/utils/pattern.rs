@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::bail;
 
@@ -17,15 +17,24 @@ impl HashPattern {
 
         let hash_str = hex::encode_upper(hash);
 
-        let mut matched = true;
         for (i, c) in self.pattern.chars().enumerate() {
             if c.is_ascii_hexdigit() && c != hash_str.chars().nth(i).unwrap() {
-                matched = false;
-                break;
+                return false;
             }
         }
 
-        matched
+        let mut map = HashMap::new();
+        for (pos, c) in self.pattern.chars().enumerate() {
+            if ('G'..='Z').contains(&c) {
+                let hash_char = hash_str.chars().nth(pos).unwrap();
+                let expect = map.entry(c).or_insert(hash_char);
+                if *expect != hash_char {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 }
 
