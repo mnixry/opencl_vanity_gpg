@@ -43,7 +43,12 @@ jobs:
         id: build
         shell: bash
         run: |
-          RUSTFLAGS="--remap-path-prefix $HOME=~" cargo build --release
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            export RUSTFLAGS="--remap-path-prefix C:\\Users\\runneradmin=~"
+          else
+            export RUSTFLAGS="--remap-path-prefix $HOME=~"
+          fi
+          cargo build --release
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo "executable=target/release/opencl_vanity_gpg.exe" >> $GITHUB_OUTPUT
           else
