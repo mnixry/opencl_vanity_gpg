@@ -33,9 +33,10 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             sudo apt install opencl-headers ocl-icd-opencl-dev
           fi
-          if [ $BUILD_OS == "macOS" ]; then
-            # FIXME
-          fi
+          # FIXME
+          # if [[ "$RUNNER_OS" == "macOS" ]]; then
+          #
+          # fi
       - name: Build
         shell: bash
         id: build
