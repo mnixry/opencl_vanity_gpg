@@ -1,14 +1,16 @@
 mod args;
 mod device;
-mod hash_pattern;
-mod vanity_secret_key;
+mod pattern;
+mod vanity_key;
 
-use std::mem;
+use std::{fmt::Write, mem};
 
 pub use args::*;
 pub use device::DeviceList;
-pub use hash_pattern::HashPattern;
-pub use vanity_secret_key::VanitySecretKey;
+pub use pattern::HashPattern;
+use indicatif::*;
+use indicatif_log_bridge::LogWrapper;
+pub use vanity_key::VanitySecretKey;
 
 /// Do SHA-1 padding manually
 /// A SHA-1 block is 512 bit, so the output Vec<u32> length is a multiple of 16
@@ -44,19 +46,72 @@ pub fn manually_prepare_sha1(hashdata: Vec<u8>) -> Vec<u32> {
     result_u32
 }
 
+pub fn init_logger() -> MultiProgress {
+    let logger = env_logger::Builder::from_env(
+        env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info"),
+    )
+    .format_indent(None)
+    .build();
+
+    let level = logger.filter();
+    let multi = MultiProgress::new();
+
+    LogWrapper::new(multi.clone(), logger).try_init().unwrap();
+    log::set_max_level(level);
+
+    multi
+}
+
+pub fn init_progress_bar(estimate: Option<f64>) -> ProgressBar {
+    let bar = match estimate {
+        Some(estimate) => ProgressBar::new(estimate as u64),
+        None => ProgressBar::new_spinner(),
+    };
+
+    bar.set_style(
+        ProgressStyle::default_spinner()
+            .template("[{elapsed_precise}] {bar:50.cyan/blue} {progress} {rate} > {eta_precise}")
+            .unwrap()
+            .progress_chars("##-")
+            .with_key("progress", |state: &ProgressState, w: &mut dyn Write| {
+                write!(
+                    w,
+                    "{}/{}",
+                    format_number(state.pos() as f64),
+                    match state.len() {
+                        None => "???".to_string(),
+                        Some(x) => format_number(x as f64),
+                    }
+                )
+                .unwrap()
+            })
+            .with_key("rate", |state: &ProgressState, w: &mut dyn Write| {
+                write!(
+                    w,
+                    "{} hash/s",
+                    format_number((state.pos() as f64) / state.elapsed().as_secs_f64()),
+                )
+                .unwrap()
+            }),
+    );
+
+    bar
+}
+
+
 pub fn format_number(v: impl Into<f64>) -> String {
     match Into::<f64>::into(v) {
         v if v >= 1e12f64 => {
-            format!("{:.02}t", v / 1e12f64)
+            format!("{:.02}T", v / 1e12f64)
         }
         v if v >= 1e9f64 => {
-            format!("{:.02}b", v / 1e9f64)
+            format!("{:.02}B", v / 1e9f64)
         }
         v if v >= 1e6f64 => {
-            format!("{:.02}m", v / 1e6f64)
+            format!("{:.02}M", v / 1e6f64)
         }
         v if v >= 1e3f64 => {
-            format!("{:.02}k", v / 1e3f64)
+            format!("{:.02}K", v / 1e3f64)
         }
         v => {
             format!("{v:.02}")

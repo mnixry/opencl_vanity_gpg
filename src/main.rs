@@ -1,11 +1,9 @@
 use anyhow::bail;
-use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use log::{debug, info, warn};
+use log::*;
 use ocl::{Buffer, Device, Platform, ProQue};
 use pgp::types::PublicKeyTrait;
 use rand::thread_rng;
 use std::{
-    fmt::Write,
     fs,
     path::Path,
     str::FromStr,
@@ -19,11 +17,7 @@ use utils::*;
 mod utils;
 
 fn main() -> anyhow::Result<()> {
-    env_logger::Builder::from_env(
-        env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info"),
-    )
-    .format_indent(None)
-    .init();
+    let bars = init_logger();
 
     debug!("{:#?}", LazyLock::force(&ARGS));
 
@@ -126,7 +120,8 @@ fn main() -> anyhow::Result<()> {
     thread::spawn(move || opencl_thread(buffer_result, pro_que, rx_hashdata, tx_result));
 
     let bench_size = (dimension * iteration) as u64;
-    let bar = init_progress_bar(estimate);
+    let bar = bars.add(init_progress_bar(estimate));
+
     loop {
         debug!("Send key to OpenCL thread");
         tx_hashdata.send(hashdata)?;
@@ -178,6 +173,8 @@ fn main() -> anyhow::Result<()> {
                 }
 
                 if ARGS.oneshot {
+                    bar.finish();
+                    bars.clear()?;
                     break;
                 }
 
@@ -241,40 +238,4 @@ fn opencl_thread(
             .unwrap();
     }
     debug!("OpenCL thread quit");
-}
-
-fn init_progress_bar(estimate: Option<f64>) -> ProgressBar {
-    let bar = match estimate {
-        Some(estimate) => ProgressBar::new(estimate as u64),
-        None => ProgressBar::new_spinner(),
-    };
-
-    bar.set_style(
-        ProgressStyle::default_spinner()
-            .template("[{elapsed_precise}] {bar:40.cyan/blue} {progress} {rate}")
-            .unwrap()
-            .progress_chars("##-")
-            .with_key("progress", |state: &ProgressState, w: &mut dyn Write| {
-                write!(
-                    w,
-                    "{}/{}",
-                    format_number(state.pos() as f64),
-                    match state.len() {
-                        None => "???".to_string(),
-                        Some(x) => format_number(x as f64),
-                    }
-                )
-                .unwrap()
-            })
-            .with_key("rate", |state: &ProgressState, w: &mut dyn Write| {
-                write!(
-                    w,
-                    "{} hash/s",
-                    format_number((state.pos() as f64) / state.elapsed().as_secs_f64()),
-                )
-                .unwrap()
-            }),
-    );
-
-    bar
 }
