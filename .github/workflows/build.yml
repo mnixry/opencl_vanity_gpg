@@ -23,6 +23,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Prepare OpenCL SDK
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             VERSION=$(gh release view --repo KhronosGroup/OpenCL-SDK --json tagName --jq .tagName)
@@ -38,10 +40,10 @@ jobs:
           #
           # fi
       - name: Build
-        shell: bash
         id: build
+        shell: bash
         run: |
-          cargo build --release
+          RUSTFLAGS="--remap-path-prefix $HOME=~" cargo build --release
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo "executable=target/release/opencl_vanity_gpg.exe" >> $GITHUB_OUTPUT
           else
