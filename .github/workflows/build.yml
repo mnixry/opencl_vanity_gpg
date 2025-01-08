@@ -31,7 +31,7 @@ jobs:
             cp "OpenCL-SDK-${VERSION}-Win-x64/lib/OpenCL.lib" OpenCL.lib
           fi
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            apt install opencl-headers ocl-icd-opencl-dev
+            sudo apt install opencl-headers ocl-icd-opencl-dev
           fi
           if [ $BUILD_OS == "macOS" ]; then
             # FIXME
