@@ -4,8 +4,8 @@
 
 “靓号”指的是带有连号等特定格式的密钥指纹或 ID（例如以 `77777777` 结尾），具体介绍和生成原理请参见：
 
-* [一位 PGP 进步青年的科学算号实践](https://www.douban.com/note/763978955/)
-* [某科学的 PGP 算号指南](https://blog.dejavu.moe/posts/the-scientific-vanity-pgp-counting-guide/)
+- [一位 PGP 进步青年的科学算号实践](https://www.douban.com/note/763978955/)
+- [某科学的 PGP 算号指南](https://blog.dejavu.moe/posts/the-scientific-vanity-pgp-counting-guide/)
 
 ![](https://github.com/user-attachments/assets/e6364d93-fffe-4fcd-9857-b70155e6f476)
 
@@ -34,16 +34,16 @@ Options:
                                      Use gpg CLI for further editing of the key. [default: ed25519] [possible values: ed25519, cv25519, rsa2048, rsa3072, rsa4096, ecdh-p256, ecdh-p384, ecdh-p521, ecdsa-p256, ecdsa-p384, ecdsa-p521]
   -u, --user-id <USER_ID>            OpenPGP compatible user ID [default: "Dummy <dummy@example.com>"]
   -p, --pattern <PATTERN>            A pattern less than 40 chars for matching fingerprints
-                                     Format:
+                                     > Format:
                                      * 0-9A-F are fixed, G-Z are wildcards
                                      * Other chars will be ignored
                                      * Case insensitive
-                                     Example:
+                                     > Example:
                                      * 11XXXX** may output a fingerprint ends with 11222234 or 11AAAABF
                                      * 11XXYYZZ may output a fingerprint ends with 11223344 or 11AABBCC
   -f, --filter <FILTER>              OpenCL kernel function for uint h[5] for matching fingerprints
                                      Ignore the pattern and no estimate is given if this has been set
-                                     Example:
+                                     > Example:
                                      * (h[4] & 0xFFFF)     == 0x1234     outputs a fingerprint ends with 1234
                                      * (h[0] & 0xFFFF0000) == 0xABCD0000 outputs a fingerprint starts with ABCD
   -o, --output <OUTPUT>              The dir where the vanity keys are saved
@@ -54,41 +54,48 @@ Options:
       --oneshot                      Exit after getting a vanity key
       --no-progress                  Don't print progress
       --no-secret-key-logging        Don't print armored secret key
-      --device-list                  Show available OpenCL devices then exit
+      --list-device                  Show available OpenCL devices then exit
   -h, --help                         Print help
   -V, --version                      Print version
 
-$ opencl_vanity_gpg -p 111XXXYYYZZZ --oneshot
-[2025-01-08T13:50:49Z INFO  opencl_vanity_gpg] Using device: NVIDIA GeForce GTX 1070
-[2025-01-08T13:50:49Z INFO  opencl_vanity_gpg] Auto set thread: 1048576
-[2025-01-08T13:50:49Z INFO  opencl_vanity_gpg] You will get vanity keys created after 2008-01-04T19:02:17.598Z
-[2025-01-08T13:50:49Z WARN  opencl_vanity_gpg] No output dir given. Generated vanity keys will not be saved.
-[2025-01-08T13:50:58Z INFO  opencl_vanity_gpg] Get a vanity key:
+$ opencl_vanity_gpg -p 11XXYYZZ --oneshot
+[2025-01-08T19:00:25Z INFO  opencl_vanity_gpg] Using device: Apple M1 Pro
+[2025-01-08T19:00:25Z INFO  opencl_vanity_gpg] Auto set thread: 1048576
+[2025-01-08T19:00:25Z INFO  opencl_vanity_gpg] You will get vanity keys created after 2008-01-05T00:11:53.021Z
+[2025-01-08T19:00:25Z WARN  opencl_vanity_gpg] No output dir given. Generated vanity keys will not be saved.
+[2025-01-08T19:00:26Z INFO  opencl_vanity_gpg::utils::vanity_key] Get a vanity key:
 -----BEGIN PGP PRIVATE KEY BLOCK-----
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxx
+xVgER4EupBYJKwYBBAHaRw8BAQdAI4vIy0CaErtwj1iAQInMQYwIz4BMo30MfS1s
+Kg0FYMUAAP4oOaeAXKE3fHhq1H28qYI+j7awA2iYQW7+fgTODpyXWxAfzRlEdW1t
+eSA8ZHVtbXlAZXhhbXBsZS5jb20+wo4EEBYIADYCGQEFAmd+y0oCGwMECwkIBwUV
+CgkICwUWAgMBAAEnFiEEucj6sO6iKUnbGDpx5F4DcRHMZiIACgkQ5F4DcRHMZiJ0
+iQD/cUPO7lBsDbg5wyFwXalTvzcac8865OakjsdmA+bJPc8A/insYTxgzA/boh7i
+ieogUSu64E0VyYGnfjcnIMX33mQPx10ER4EupBIKKwYBBAGXVQEFAQEHQPHXTpFg
+T6dZ/eudJ0W+JzzfuzK8cCWlDcaWD/DEogVRAwEIBwAA/2I4tvG84tjPcZGxClnJ
+nUpTRDrLvKtelZ5QBZLJbNJoEjXCeAQYFggAIAUCZ37LSgIbDBYhBLnI+rDuoilJ
+2xg6ceReA3ERzGYiAAoJEOReA3ERzGYi8QwBAPr0n0eGhbNt5PMUfDccx4ttthFm
+xsCkD3wdoVaA7t/BAQCvPyuVmtJN4M8gsYNRZYEfLwb1BIckohZv+svENGSqAw==
+=ZeYm
 -----END PGP PRIVATE KEY BLOCK-----
 
-[2025-01-08T13:50:58Z INFO  opencl_vanity_gpg] Created at: 2022-10-07T18:07:54.000Z (1665166074)
-[2025-01-08T13:50:58Z INFO  opencl_vanity_gpg] Fingerprint #0: 8A166AF156114C8847390E158CB2111000AAAEEE
-[2025-01-08T13:50:58Z INFO  opencl_vanity_gpg] Fingerprint #1: AC6D0BE52B29AB00CFF4841CEDD530E847FD5DF6
-[2025-01-08T13:50:58Z INFO  opencl_vanity_gpg] Hashed: 32749.13m (0.48x) Time: 8.71s Speed: 3761.64m hash/s
+[2025-01-08T19:00:26Z INFO  opencl_vanity_gpg::utils::vanity_key] Created at: 2008-01-06T19:40:20.000Z (1199648420)
+[2025-01-08T19:00:26Z INFO  opencl_vanity_gpg::utils::vanity_key] Fingerprint #0: B9C8FAB0EEA22949DB183A71E45E037111CC6622
+[2025-01-08T19:00:26Z INFO  opencl_vanity_gpg::utils::vanity_key] Fingerprint #1: 7FBC6D063D9C4CF4C281E8A14876C8831552E9B4
+[2025-01-08T19:00:26Z INFO  opencl_vanity_gpg] Hashed: 536.87M (512.00x) Time: 1.53s Speed: 351.76M hash/s
 ```
 
-一个 Curve25519 的密钥由用来签名和认证的 Ed25519 主密钥和用来加密的 Cv25519 子密钥组成。VanityGPG [只能生成主密钥为“靓号”的密钥](https://github.com/RedL0tus/VanityGPG/issues/5)，而这个项目也可以生成子密钥为“靓号”的密钥（只需要添加参数 `-c cv25519` 即可）。对于其他 NISP P-*** 的椭圆曲线的密钥也是类似的。
+一个 Curve25519 的密钥由用来签名和认证的 Ed25519 主密钥和用来加密的 Cv25519 子密钥组成。VanityGPG [只能生成主密钥为“靓号”的密钥](https://github.com/RedL0tus/VanityGPG/issues/5)，而这个项目也可以生成子密钥为“靓号”的密钥（只需要添加参数 `-c cv25519` 即可）。对于其他 NISP P-\*\*\* 的椭圆曲线的密钥也是类似的。
 
 # 性能对比
 
-| Repo | 计算方式 | 速度（hash/s） | 注释 |
-| - | - | - | - |
-| [RedL0tus/VanityGPG](https://github.com/RedL0tus/VanityGPG) | CPU | 165m | Xeon w5-2465X ×16 cores |
-| 这个项目 | CPU | 120m | Xeon w5-2465X ×16 cores <br> CPU 也可以是 OpenCL 的计算设备，虽然性能损耗比较严重…… |
-| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU | 2b | GTX 1070 |
-| 这个项目 | GPU | 3b | GTX 1070 |
-| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU | 7b | RTX A5500 |
-| 这个项目 | GPU | 12b | RTX A5500 |
+| Repo                                                                                | 计算方式 | 速度（hash/s） | 注释                                                                                |
+| ----------------------------------------------------------------------------------- | -------- | -------------- | ----------------------------------------------------------------------------------- |
+| [RedL0tus/VanityGPG](https://github.com/RedL0tus/VanityGPG)                         | CPU      | 165m           | Xeon w5-2465X ×16 cores                                                             |
+| 这个项目                                                                            | CPU      | 120m           | Xeon w5-2465X ×16 cores <br> CPU 也可以是 OpenCL 的计算设备，虽然性能损耗比较严重…… |
+| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU      | 2b             | GTX 1070                                                                            |
+| 这个项目                                                                            | GPU      | 3b             | GTX 1070                                                                            |
+| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU      | 7b             | RTX A5500                                                                           |
+| 这个项目                                                                            | GPU      | 12b            | RTX A5500                                                                           |
 
 以上的速度均为生成 Curve25519 类型的密钥的速度。

@@ -18,17 +18,15 @@ pub struct Args {
     pub cipher_suite: CipherSuite,
 
     /// OpenPGP compatible user ID
-    #[arg(short, long, default_value_t = String::from("Dummy <dummy@example.com>"), verbatim_doc_comment)]
+    #[arg(short, long, default_value_t = String::from("Dummy <dummy@example.com>"))]
     pub user_id: String,
 
     /// A pattern less than 40 chars for matching fingerprints
-    /// Format:
+    /// > Format:
     /// * 0-9A-F are fixed, G-Z are wildcards
     /// * Other chars will be ignored
     /// * Case insensitive
-    ///
-    /// ## Example:
-    ///
+    /// > Example:
     /// * 11XXXX** may output a fingerprint ends with 11222234 or 11AAAABF
     /// * 11XXYYZZ may output a fingerprint ends with 11223344 or 11AABBCC
     #[arg(short, long, verbatim_doc_comment)]
@@ -36,9 +34,7 @@ pub struct Args {
 
     /// OpenCL kernel function for uint h[5] for matching fingerprints
     /// Ignore the pattern and no estimate is given if this has been set
-    ///
-    /// ## Example:
-    ///
+    /// > Example:
     /// * (h[4] & 0xFFFF)     == 0x1234     outputs a fingerprint ends with 1234
     /// * (h[0] & 0xFFFF0000) == 0xABCD0000 outputs a fingerprint starts with ABCD
     #[arg(short, long, verbatim_doc_comment)]
