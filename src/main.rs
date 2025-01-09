@@ -24,7 +24,10 @@ fn main() -> anyhow::Result<()> {
     let device_list = utils::DeviceList::new()?;
 
     if ARGS.list_device {
-        info!("Available OpenCL devices: \n{:?}", device_list);
+        info!("Available OpenCL devices: \n");
+        for (i, device) in device_list.iter().enumerate() {
+            println!("Device #{} - {:?}", i, device);
+        }
         return Ok(());
     }
 

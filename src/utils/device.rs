@@ -76,12 +76,3 @@ impl std::ops::Deref for DeviceList {
         &self.0
     }
 }
-
-impl std::fmt::Debug for DeviceList {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        for (index, device) in self.0.iter().enumerate() {
-            writeln!(f, "Device #{} - {:?}\n", index, device)?;
-        }
-        Ok(())
-    }
-}
