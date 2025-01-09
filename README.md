@@ -89,13 +89,17 @@ xsCkD3wdoVaA7t/BAQCvPyuVmtJN4M8gsYNRZYEfLwb1BIckohZv+svENGSqAw==
 
 # 性能对比
 
-| Repo                                                                                | 计算方式 | 速度（hash/s） | 注释                                                                                |
-| ----------------------------------------------------------------------------------- | -------- | -------------- | ----------------------------------------------------------------------------------- |
-| [RedL0tus/VanityGPG](https://github.com/RedL0tus/VanityGPG)                         | CPU      | 165m           | Xeon w5-2465X ×16 cores                                                             |
-| 这个项目                                                                            | CPU      | 120m           | Xeon w5-2465X ×16 cores <br> CPU 也可以是 OpenCL 的计算设备，虽然性能损耗比较严重…… |
-| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU      | 2b             | GTX 1070                                                                            |
-| 这个项目                                                                            | GPU      | 3b             | GTX 1070                                                                            |
-| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU      | 7b             | RTX A5500                                                                           |
-| 这个项目                                                                            | GPU      | 12b            | RTX A5500                                                                           |
+| Repo | 计算方式 | 速度（hash/s） | 注释 |
+| - | - | - | - |
+| [RedL0tus/VanityGPG](https://github.com/RedL0tus/VanityGPG) | CPU | 165m | Xeon w5-2465X ×16 cores <br> Arch Linux |
+| 这个项目 | CPU | 120m | Xeon w5-2465X ×16 cores <br> Arch Linux <br> CPU 也可以是 OpenCL 的计算设备，虽然性能损耗比较严重…… |
+| [cuihaoleo/gpg-fingerprint-filter-gpu](https://github.com/cuihaoleo/gpg-fingerprint-filter-gpu) | GPU | 1b | A16 1/8 <br> Ubuntu 24.04 |
+| 这个项目 | GPU | 1.5b | A16 1/8 <br> Ubuntu 24.04 |
+| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU | 2b | GTX 1070 <br> Windows 11 |
+| 这个项目 | GPU | 3b | GTX 1070 <br> Windows 11 |
+| [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU | 7b | RTX A5500 <br> Windows 11 |
+| 这个项目 | GPU | 12b | RTX A5500 <br> Windows 11 |
+| 这个项目 | GPU | 380m | Apple M1 Pro |
+| 这个项目 | GPU | 1.6b | Apple M4 Pro |
 
 以上的速度均为生成 Curve25519 类型的密钥的速度。
