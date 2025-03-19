@@ -99,8 +99,8 @@ xsCkD3wdoVaA7t/BAQCvPyuVmtJN4M8gsYNRZYEfLwb1BIckohZv+svENGSqAw==
 | 这个项目 | GPU | 3b | GTX 1070 <br> Windows 11 |
 | [TransparentLC/webgl-vanity-gpg](https://github.com/TransparentLC/webgl-vanity-gpg) | GPU | 7b | RTX A5500 <br> Windows 11 |
 | 这个项目 | GPU | 12b | RTX A5500 <br> Windows 11 |
-| 这个项目 | GPU | 32b | RTX 4090 <br> *操作系统不明* |
-| 这个项目 | GPU | 240m | RTX 4090 <br> *操作系统不明* rsa4096 |
+| 这个项目 | GPU | 32b | RTX 4090 <br> Ubuntu 22.04 |
+| 这个项目 | GPU | 240m | RTX 4090 <br> Ubuntu 22.04 rsa4096 |
 | 这个项目 | GPU | 380m | Apple M1 Pro |
 | 这个项目 | GPU | 1.6b | Apple M4 Pro |
 
