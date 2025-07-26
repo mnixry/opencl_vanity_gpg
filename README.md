@@ -28,35 +28,63 @@ $ opencl_vanity_gpg -h
 Usage: opencl_vanity_gpg [OPTIONS]
 
 Options:
-  -c, --cipher-suite <CIPHER_SUITE>  Cipher suite of the vanity key
-                                     ed25519, ecdsa-****, rsa**** => Primary key
-                                     cv25519,  ecdh-****          => Subkey
-                                     Use gpg CLI for further editing of the key. [default: ed25519] [possible values: ed25519, cv25519, rsa2048, rsa3072, rsa4096, ecdh-p256, ecdh-p384, ecdh-p521, ecdsa-p256, ecdsa-p384, ecdsa-p521]
-  -u, --user-id <USER_ID>            OpenPGP compatible user ID [default: "Dummy <dummy@example.com>"]
-  -p, --pattern <PATTERN>            A pattern less than 40 chars for matching fingerprints
-                                     > Format:
-                                     * 0-9A-F are fixed, G-Z are wildcards
-                                     * Other chars will be ignored
-                                     * Case insensitive
-                                     > Example:
-                                     * 11XXXX** may output a fingerprint ends with 11222234 or 11AAAABF
-                                     * 11XXYYZZ may output a fingerprint ends with 11223344 or 11AABBCC
-  -f, --filter <FILTER>              OpenCL kernel function for uint h[5] for matching fingerprints
-                                     Ignore the pattern and no estimate is given if this has been set
-                                     > Example:
-                                     * (h[4] & 0xFFFF)     == 0x1234     outputs a fingerprint ends with 1234
-                                     * (h[0] & 0xFFFF0000) == 0xABCD0000 outputs a fingerprint starts with ABCD
-  -o, --output <OUTPUT>              The dir where the vanity keys are saved
-  -d, --device <DEVICE>              Device ID to use
-  -t, --thread <THREAD>              Adjust it to maximum your device's usage
-  -i, --iteration <ITERATION>        Adjust it to maximum your device's usage [default: 512]
-      --timeout <TIMEOUT>            Exit after a specified time in seconds
-      --oneshot                      Exit after getting a vanity key
-      --no-progress                  Don't print progress
-      --no-secret-key-logging        Don't print armored secret key
-      --list-device                  Show available OpenCL devices then exit
-  -h, --help                         Print help
-  -V, --version                      Print version
+  -c, --cipher-suite <CIPHER_SUITE>
+          Cipher suite of the vanity key
+          ed25519, ecdsa-****, rsa**** => Primary key
+          cv25519,  ecdh-****          => Subkey
+          Use gpg CLI for further editing of the key. [default: ed25519] [possible values: ed25519, cv25519, rsa2048, rsa3072, rsa4096, ecdh-p256, ecdh-p384, ecdh-p521, ecdsa-p256, ecdsa-p384, ecdsa-p521]
+  -u, --user-id <USER_ID>
+          OpenPGP compatible user ID [default: "Dummy <dummy@example.com>"]
+  -p, --pattern <PATTERN>
+          A pattern less than 40 chars for matching fingerprints
+          > Format:
+          * 0-9A-F are fixed, G-Z are wildcards
+          * Other chars will be ignored
+          * Case insensitive
+          > Example:
+          * 11XXXX** may output a fingerprint ends with 11222234 or 11AAAABF
+          * 11XXYYZZ may output a fingerprint ends with 11223344 or 11AABBCC
+  -f, --filter <FILTER>
+          OpenCL kernel function for uint h[5] for matching fingerprints
+          Ignore the pattern and no estimate is given if this has been set
+          > Example:
+          * (h[4] & 0xFFFF)     == 0x1234     outputs a fingerprint ends with 1234
+          * (h[0] & 0xFFFF0000) == 0xABCD0000 outputs a fingerprint starts with ABCD
+  -o, --output <OUTPUT>
+          The dir where the vanity keys are saved
+  -d, --device <DEVICE>
+          Device ID to use
+  -t, --thread <THREAD>
+          Adjust it to maximum your device's usage
+  -i, --iteration <ITERATION>
+          Adjust it to maximum your device's usage [default: 512]
+      --timeout <TIMEOUT>
+          Exit after a specified time in seconds
+      --oneshot
+          Exit after getting a vanity key
+      --no-progress
+          Don't print progress
+      --no-secret-key-logging
+          Don't print armored secret key
+      --list-device
+          Show available OpenCL devices then exit
+      --future-timestamp
+          Generate keys with future timestamps instead of past timestamps
+          When true: search from start_timestamp forward in time (start_timestamp + 0 to max_time_range)
+          When false: search from start_timestamp backward in time (start_timestamp - max_time_range to start_timestamp - 0)
+      --start-timestamp <START_TIMESTAMP>
+          Custom timestamp to start searching from (Unix timestamp)
+          This is the base time point from which the search begins
+          If not specified, uses current time as the starting point
+          Example: 1640995200 (Jan 1, 2022 00:00:00 UTC)
+      --max-time-range <MAX_TIME_RANGE>
+          Maximum time range to search in seconds (default: 86400000 = 1000 days)
+          future_timestamp=true: search from start_timestamp to (start_timestamp + max_time_range)
+          future_timestamp=false: search from (start_timestamp - max_time_range) to start_timestamp [default: 86400000]
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 
 $ opencl_vanity_gpg -p 11XXYYZZ --oneshot
 [2025-01-08T19:00:25Z INFO  opencl_vanity_gpg] Using device: Apple M1 Pro

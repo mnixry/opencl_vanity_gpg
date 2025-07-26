@@ -75,6 +75,25 @@ pub struct Args {
     /// Show available OpenCL devices then exit
     #[arg(long, default_value_t = false)]
     pub list_device: bool,
+
+    /// Generate keys with future timestamps instead of past timestamps
+    /// When true: search from start_timestamp forward in time (start_timestamp + 0 to max_time_range)
+    /// When false: search from start_timestamp backward in time (start_timestamp - max_time_range to start_timestamp - 0)
+    #[arg(long, default_value_t = false, verbatim_doc_comment)]
+    pub future_timestamp: bool,
+
+    /// Custom timestamp to start searching from (Unix timestamp)
+    /// This is the base time point from which the search begins
+    /// If not specified, uses current time as the starting point
+    /// Example: 1640995200 (Jan 1, 2022 00:00:00 UTC)
+    #[arg(long, verbatim_doc_comment)]
+    pub start_timestamp: Option<i64>,
+
+    /// Maximum time range to search in seconds (default: 86400000 = 1000 days)
+    /// future_timestamp=true: search from start_timestamp to (start_timestamp + max_time_range)
+    /// future_timestamp=false: search from (start_timestamp - max_time_range) to start_timestamp
+    #[arg(long, default_value_t = 86400000, verbatim_doc_comment)]
+    pub max_time_range: u64,
 }
 
 impl Default for Args {
@@ -93,6 +112,9 @@ impl Default for Args {
             no_progress: true,
             no_secret_key_logging: false,
             list_device: false,
+            future_timestamp: false,
+            start_timestamp: None,
+            max_time_range: 86400000,
         }
     }
 }

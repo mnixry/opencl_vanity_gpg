@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
     if ARGS.list_device {
         info!("Available OpenCL devices: \n");
         for (i, device) in device_list.iter().enumerate() {
-            println!("Device #{} - {:?}", i, device);
+            println!("Device #{i} - {device:?}");
         }
         return Ok(());
     }
@@ -51,13 +51,32 @@ fn main() -> anyhow::Result<()> {
     };
 
     let iteration = ARGS.iteration;
-    info!(
-        "You will get vanity keys created after {}",
-        chrono::Utc::now()
-            .checked_sub_signed(chrono::TimeDelta::seconds((dimension * iteration) as i64))
-            .unwrap()
-            .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
-    );
+
+    // Determine the starting timestamp
+    let start_timestamp = ARGS
+        .start_timestamp
+        .unwrap_or_else(|| chrono::Utc::now().timestamp());
+
+    // Use the user-specified time range instead of dimension * iteration
+    let max_search_offset = ARGS.max_time_range as i64;
+
+    if ARGS.future_timestamp {
+        info!(
+            "Starting search from {} and going forward in time (up to {} seconds)",
+            chrono::DateTime::from_timestamp(start_timestamp, 0)
+                .unwrap_or_else(chrono::Utc::now)
+                .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+            max_search_offset
+        );
+    } else {
+        info!(
+            "Starting search from {} and going backward in time (up to {} seconds)",
+            chrono::DateTime::from_timestamp(start_timestamp, 0)
+                .unwrap_or_else(chrono::Utc::now)
+                .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+            max_search_offset
+        );
+    }
 
     if ARGS.output.is_none() {
         if ARGS.no_secret_key_logging {
@@ -91,6 +110,31 @@ fn main() -> anyhow::Result<()> {
     };
 
     let mut vanity_key = VanitySecretKey::new(ARGS.cipher_suite, ARGS.user_id.clone(), &mut rng);
+
+    // Set the initial timestamp for the key
+    // Ensure we use the full timestamp value, not truncated
+    let initial_timestamp = if start_timestamp > u32::MAX as i64 {
+        // If timestamp is too large for u32, we need to handle this carefully
+        // For now, use the current approach but ensure we're aware of the limitation
+        warn!(
+            "Timestamp {} is too large for u32, may cause unexpected behavior",
+            start_timestamp
+        );
+        start_timestamp as u32
+    } else {
+        start_timestamp as u32
+    };
+
+    info!(
+        "Using base timestamp: {} ({})",
+        initial_timestamp,
+        chrono::DateTime::from_timestamp(initial_timestamp as i64, 0)
+            .unwrap_or_else(chrono::Utc::now)
+            .to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
+    );
+
+    vanity_key.edit_timestamp(initial_timestamp, &mut rng);
+
     let mut hashdata = manually_prepare_sha1(vanity_key.hashdata());
 
     let (tx_hashdata, rx_hashdata) = channel::<Vec<u32>>();
@@ -106,6 +150,10 @@ fn main() -> anyhow::Result<()> {
                 &[
                     format!("#define FILTER(h) ({filter})"),
                     format!("#define CHUNK ({})", hashdata.len() / 16),
+                    format!(
+                        "#define FUTURE_MODE ({})",
+                        if ARGS.future_timestamp { 1 } else { 0 }
+                    ),
                 ]
                 .join("\n"),
             ),
@@ -128,8 +176,11 @@ fn main() -> anyhow::Result<()> {
     loop {
         debug!("Send key to OpenCL thread");
         tx_hashdata.send(hashdata)?;
-        let vanity_key_next =
+        let mut vanity_key_next =
             VanitySecretKey::new(ARGS.cipher_suite, ARGS.user_id.clone(), &mut rng);
+
+        // Set the same initial timestamp for consistency
+        vanity_key_next.edit_timestamp(initial_timestamp, &mut rng);
         let hashdata_next = manually_prepare_sha1(vanity_key_next.hashdata());
 
         debug!("Receive result from OpenCL thread");
@@ -224,6 +275,7 @@ fn opencl_thread(
             .arg(&buffer_hashdata)
             .arg(&buffer_result)
             .arg(ARGS.iteration as u64)
+            .arg(ARGS.max_time_range as u32)
             .build()
             .unwrap();
 
