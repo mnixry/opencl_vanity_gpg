@@ -4,15 +4,35 @@
 #ifdef __INJECTS__
 #define CHUNK (0)
 #define FILTER(h) (false)
+#define FUTURE_MODE (0)
 #endif
 
-__kernel void vanity_sha1(__constant uint *hashdata, __global uint *result, const ulong iter) {
+__kernel void vanity_sha1(__constant uint *hashdata, __global uint *result, const ulong iter, const uint max_time_range) {
     uint data[CHUNK * 16];
     for (uint i = 0; i < CHUNK * 16; i++) data[i] = hashdata[i];
     uint nonce = data[1];
+    
+    uint thread_id = get_global_id(0);
+    
     for (uint i = 0; i < iter; i++) {
-        data[1] = nonce - get_global_id(0) * iter - i;
-        if (data[1] > nonce) break;
+        // Use a simple sequential approach that searches close to base time first
+        // Each thread gets a small sequential offset
+        uint offset = thread_id + i * get_global_size(0);
+        
+        // Wrap around within max_time_range to avoid going too far
+        offset = offset % max_time_range;
+        
+        if (FUTURE_MODE) {
+            // For future mode: increment timestamp within range
+            data[1] = nonce + offset;
+            // Check for overflow
+            if (data[1] < nonce) break;
+        } else {
+            // For past mode: decrement timestamp within range
+            data[1] = nonce - offset;
+            // Check for underflow
+            if (data[1] > nonce) break;
+        }
 
         uint h[] = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0};
 

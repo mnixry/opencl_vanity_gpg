@@ -7,9 +7,9 @@ use std::{fmt::Write, mem};
 
 pub use args::*;
 pub use device::DeviceList;
-pub use pattern::HashPattern;
 use indicatif::*;
 use indicatif_log_bridge::LogWrapper;
+pub use pattern::HashPattern;
 pub use vanity_key::VanitySecretKey;
 
 /// Do SHA-1 padding manually
@@ -97,7 +97,6 @@ pub fn init_progress_bar(estimate: Option<f64>) -> ProgressBar {
 
     bar
 }
-
 
 pub fn format_number(v: impl Into<f64>) -> String {
     match Into::<f64>::into(v) {
