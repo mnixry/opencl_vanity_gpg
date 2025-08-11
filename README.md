@@ -129,6 +129,7 @@ xsCkD3wdoVaA7t/BAQCvPyuVmtJN4M8gsYNRZYEfLwb1BIckohZv+svENGSqAw==
 | 这个项目 | GPU | 12b | RTX A5500 <br> Windows 11 |
 | 这个项目 | GPU | 32b | RTX 4090 <br> Ubuntu 22.04 |
 | 这个项目 | GPU | 240m | RTX 4090 <br> Ubuntu 22.04 rsa4096 |
+| 这个项目 | GPU | 42b | RTX 5090 <br> Windows 11 |
 | 这个项目 | GPU | 380m | Apple M1 Pro |
 | 这个项目 | GPU | 1.6b | Apple M4 Pro |
 
