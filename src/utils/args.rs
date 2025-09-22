@@ -56,6 +56,11 @@ pub struct Args {
     #[arg(short, long, default_value_t = 1 << 9)]
     pub iteration: usize,
 
+    /// Number of independent hash datas processed per kernel launch (batch size)
+    /// Defaults to the number of physical CPU cores
+    #[arg(long, default_value_t = num_cpus::get_physical())]
+    pub datalen: usize,
+
     /// Exit after a specified time in seconds
     #[arg(long)]
     pub timeout: Option<f64>,
@@ -107,6 +112,7 @@ impl Default for Args {
             device: None,
             thread: None,
             iteration: 512,
+            datalen: num_cpus::get_physical(),
             timeout: None,
             oneshot: true,
             no_progress: true,

@@ -7,12 +7,17 @@
 #define FUTURE_MODE (0)
 #endif
 
-__kernel void vanity_sha1(__constant uint *hashdata, __global uint *result, const ulong iter, const uint max_time_range) {
+// Enable 32-bit global atomics for result publishing
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+
+__kernel void vanity_sha1(__global const uint *hashdata, __global uint *results, const uint datalen, const ulong iter, const uint max_time_range) {
     uint data[CHUNK * 16];
-    for (uint i = 0; i < CHUNK * 16; i++) data[i] = hashdata[i];
-    uint nonce = data[1];
     
     uint thread_id = get_global_id(0);
+    uint batch_idx = get_global_id(1);
+    uint base = batch_idx * (CHUNK * 16);
+    for (uint i = 0; i < CHUNK * 16; i++) data[i] = hashdata[base + i];
+    uint nonce = data[1];
     
     for (uint i = 0; i < iter; i++) {
         // Use a simple sequential approach that searches close to base time first
@@ -82,7 +87,8 @@ __kernel void vanity_sha1(__constant uint *hashdata, __global uint *result, cons
         }
 
         if (FILTER(h)) {
-            *result = data[1];
+            // Publish first-found timestamp for this batch index
+            atomic_cmpxchg((volatile __global int *)&results[batch_idx], 0, (int)data[1]);
             break;
         }
     }

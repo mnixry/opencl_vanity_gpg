@@ -8,6 +8,7 @@ codegen-units = 1
 lto = "thin"
 opt-level = 3
 panic = "abort"
+debug = 1
 strip = true
 
 [dependencies]
@@ -24,3 +25,4 @@ smallvec = "1.13"
 anyhow = "1.0"
 indicatif = "0.17"
 indicatif-log-bridge = "0.2"
+num_cpus = "1.17.0"

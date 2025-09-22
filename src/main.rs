@@ -135,10 +135,10 @@ fn main() -> anyhow::Result<()> {
 
     vanity_key.edit_timestamp(initial_timestamp, &mut rng);
 
-    let mut hashdata = manually_prepare_sha1(vanity_key.hashdata());
+    let hashdata = manually_prepare_sha1(vanity_key.hashdata());
 
     let (tx_hashdata, rx_hashdata) = channel::<Vec<u32>>();
-    let (tx_result, rx_result) = channel::<Option<u32>>();
+    let (tx_result, rx_result) = channel::<Vec<u32>>();
 
     let mut hashed = 0;
     let mut start = Instant::now();
@@ -159,12 +159,12 @@ fn main() -> anyhow::Result<()> {
             ),
         )
         .device(device)
-        .dims(dimension)
+        .dims([dimension, ARGS.datalen])
         .build()?;
 
     let buffer_result = Buffer::<u32>::builder()
         .queue(pro_que.queue().clone())
-        .len(1)
+        .len(ARGS.datalen)
         .fill_val(0)
         .build()?;
 
@@ -174,30 +174,41 @@ fn main() -> anyhow::Result<()> {
     let bar = bars.add(init_progress_bar(estimate));
 
     loop {
-        debug!("Send key to OpenCL thread");
-        tx_hashdata.send(hashdata)?;
-        let mut vanity_key_next =
-            VanitySecretKey::new(ARGS.cipher_suite, ARGS.user_id.clone(), &mut rng);
+        debug!("Send batch to OpenCL thread (size = {})", ARGS.datalen);
+        let mut batch_keys = Vec::with_capacity(ARGS.datalen);
+        let chunk_words = hashdata.len();
+        let mut batch_hashdata = Vec::with_capacity(chunk_words * ARGS.datalen);
+        for _ in 0..ARGS.datalen {
+            let mut key = VanitySecretKey::new(ARGS.cipher_suite, ARGS.user_id.clone(), &mut rng);
+            key.edit_timestamp(initial_timestamp, &mut rng);
+            let hd = manually_prepare_sha1(key.hashdata());
+            debug_assert_eq!(hd.len(), chunk_words);
+            batch_hashdata.extend_from_slice(&hd);
+            batch_keys.push(key);
+        }
+        tx_hashdata.send(batch_hashdata)?;
 
-        // Set the same initial timestamp for consistency
-        vanity_key_next.edit_timestamp(initial_timestamp, &mut rng);
-        let hashdata_next = manually_prepare_sha1(vanity_key_next.hashdata());
-
-        debug!("Receive result from OpenCL thread");
-        let vanity_timestamp = rx_result.recv()?;
-        hashed += bench_size;
+        debug!("Receive results from OpenCL thread");
+        let results = rx_result.recv()?;
+        hashed += bench_size * (ARGS.datalen as u64);
 
         let elapsed = start.elapsed().as_secs_f64();
-        bar.inc(bench_size);
+        bar.inc(bench_size * (ARGS.datalen as u64));
 
-        if let Some(vanity_timestamp) = vanity_timestamp {
-            vanity_key.edit_timestamp(vanity_timestamp, &mut rng);
+        if let Some((idx, ts)) = results
+            .iter()
+            .enumerate()
+            .find(|(_, &ts)| ts != 0)
+            .map(|(i, &ts)| (i, ts))
+        {
+            let mut vanity_key_found = batch_keys.swap_remove(idx);
+            vanity_key_found.edit_timestamp(ts, &mut rng);
 
             if match &pattern {
-                Some(pattern) => vanity_key.check_pattern(pattern),
+                Some(pattern) => vanity_key_found.check_pattern(pattern),
                 None => true,
             } {
-                vanity_key.log_state();
+                vanity_key_found.log_state();
 
                 match estimate {
                     Some(estimate) => info!(
@@ -219,9 +230,9 @@ fn main() -> anyhow::Result<()> {
                     fs::write(
                         Path::new(output_dir).join(format!(
                             "{}-sec.asc",
-                            hex::encode_upper(vanity_key.secret_key.fingerprint().as_bytes())
+                            hex::encode_upper(vanity_key_found.secret_key.fingerprint().as_bytes())
                         )),
-                        vanity_key.to_armored_string()?,
+                        vanity_key_found.to_armored_string()?,
                     )
                     .unwrap();
                 }
@@ -245,8 +256,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
 
-        vanity_key = vanity_key_next;
-        hashdata = hashdata_next;
+        // Next batch will be generated in the next loop iteration
     }
 
     Ok(())
@@ -256,7 +266,7 @@ fn opencl_thread(
     buffer_result: Buffer<u32>,
     pro_que: ProQue,
     rx_hashdata: Receiver<Vec<u32>>,
-    tx_result: Sender<Option<u32>>,
+    tx_result: Sender<Vec<u32>>,
 ) {
     let mut vec = vec![0; buffer_result.len()];
     debug!("OpenCL thread ready");
@@ -274,6 +284,7 @@ fn opencl_thread(
             .kernel_builder("vanity_sha1")
             .arg(&buffer_hashdata)
             .arg(&buffer_result)
+            .arg(ARGS.datalen as u32)
             .arg(ARGS.iteration as u64)
             .arg(ARGS.max_time_range as u32)
             .build()
@@ -285,12 +296,7 @@ fn opencl_thread(
 
         buffer_result.read(&mut vec).enq().unwrap();
 
-        tx_result
-            .send(match vec[0] {
-                0 => None,
-                x => Some(x),
-            })
-            .unwrap();
+        tx_result.send(vec.clone()).unwrap();
     }
     debug!("OpenCL thread quit");
 }
